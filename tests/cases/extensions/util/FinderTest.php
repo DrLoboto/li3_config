@@ -12,13 +12,13 @@ class FinderTest extends \lithium\test\Unit {
 
 	public function setUp() {
 		// Save libs
-		$this->_defaultPath = Libraries::get(true, 'path').'/tests/mocks/resources';
+		$this->_defaultPath = Libraries::get(true, 'path').'tests/mocks/resources';
 		$this->_libraries = Libraries::get();
 		foreach ($this->_libraries as $name => $options) {
 			Libraries::remove($name);
 		}
 		Libraries::add('lithium');
-		Libraries::add('common', array ('default' => true));
+		Libraries::add('li3_config', array ('default' => true));
 	}
 
 	public function tearDown() {
@@ -66,7 +66,7 @@ class FinderTest extends \lithium\test\Unit {
 		);
 
 		$expect = array (
-			'common',
+			'li3_config',
 			'finder3',
 			'finder4',
 			'finder1',
@@ -87,7 +87,7 @@ class FinderTest extends \lithium\test\Unit {
 			'finder1',
 			'finder4',
 			'finder3',
-			'common',
+			'li3_config',
 		);
 		$result = Finder::libraries(array ('reverse' => true));
 		$this->assertTrue($result);
@@ -96,28 +96,28 @@ class FinderTest extends \lithium\test\Unit {
 
 	public function testLibrariesOptions() {
 		$expect = array (
-			'common' => Libraries::get('common'),
+			'li3_config' => Libraries::get('li3_config'),
 			'lithium' => Libraries::get('lithium'),
 		);
 		$this->assertIdentical($expect, Finder::libraries());
 
 		$options = array ('options' => 'default');
 		$expect = array (
-			'common' => array ('default' => true),
+			'li3_config' => array ('default' => true),
 			'lithium' => array ('default' => false),
 		);
 		$this->assertIdentical($expect, Finder::libraries($options));
 
 		$options = array ('options' => array ('default', 'defer'));
 		$expect = array (
-			'common' => array ('default' => true, 'defer' => false),
+			'li3_config' => array ('default' => true, 'defer' => false),
 			'lithium' => array ('defer' => true, 'default' => false),
 		);
 		$this->assertIdentical($expect, Finder::libraries($options));
 
 		$options = array ('options' => 'resources', 'empty' => false);
 		$expect = array (
-			'common' => array ('resources' => Libraries::get(true, 'resources')),
+			'li3_config' => array ('resources' => Libraries::get(true, 'resources')),
 		);
 		$this->assertIdentical($expect, Finder::libraries($options));
 	}
