@@ -1,0 +1,10 @@
+{
+	"assoc" : {
+		"string" : "value1",
+		"int" : 123,
+		"float" : 1.23,
+		"boolean" : false,
+		"null" : null
+	},
+	"list" : ["string", 123, 1.23, true, null]
+}
