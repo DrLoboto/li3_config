@@ -1,0 +1,5 @@
+{
+	"app" : "Test",
+	"identity" : "IPFTest.Test2",
+	"service" : "ipf"
+}
