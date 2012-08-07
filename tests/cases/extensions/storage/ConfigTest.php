@@ -82,7 +82,7 @@ class ConfigTest extends \lithium\test\Unit {
 	 */
 	public function testGlobalAccess() {
 		$name = 'ConfigurationName';
-		$result = Config::read($name);
+		$result = Config::get($name);
 		$this->assertNull($result);
 
 		$value = array (
@@ -94,10 +94,10 @@ class ConfigTest extends \lithium\test\Unit {
 				'arr1_key2' => 'someval',
 			),
 		);
-		$result = Config::write($name, $value);
+		$result = Config::set($name, $value);
 		$this->assertIdentical($value, $result[$name]);
 
-		$result = Config::read($name);
+		$result = Config::get($name);
 		$this->assertIdentical($value, $result);
 	}
 
@@ -119,27 +119,27 @@ class ConfigTest extends \lithium\test\Unit {
 				),
 			),
 		);
-		Config::write($name, $value);
+		Config::set($name, $value);
 
-		$result = Config::read($name.'.0');
+		$result = Config::get($name.'.0');
 		$this->assertIdentical($value[0], $result);
 
-		$result = Config::read($name.'.key4');
+		$result = Config::get($name.'.key4');
 		$this->assertIdentical($value['key4'], $result);
 
-		$result = Config::read($name.'.key4.arr1_key1');
+		$result = Config::get($name.'.key4.arr1_key1');
 		$this->assertIdentical($value['key4']['arr1_key1'], $result);
 
-		$result = Config::read($name.'.key4.arr1_key2.deeper.deepest');
+		$result = Config::get($name.'.key4.arr1_key2.deeper.deepest');
 		$this->assertIdentical(
 			$value['key4']['arr1_key2']['deeper']['deepest'],
 			$result
 		);
 
 		// FATAL ERROR. This is due to not enough checking in Environment::_processDotPath method
-		/*$result = Config::read($name.'.key4.arr1_key1.null');
+		/*$result = Config::get($name.'.key4.arr1_key1.null');
 		$this->assertNull($result);*/
-		$result = Config::read('NULL.key4.arr1_key1.null');
+		$result = Config::get('NULL.key4.arr1_key1.null');
 		$this->assertNull($result);
 	}
 
@@ -147,22 +147,22 @@ class ConfigTest extends \lithium\test\Unit {
 	 * Check different levels of same dot-chain write and read
 	 */
 	public function testDotRewrite() {
-		Config::write('dot.path', array ('second' => 'level'));
-		$this->assertEqual(array ('second' => 'level'), Config::read('dot.path'));
-		$this->assertIdentical('level', Config::read('dot.path.second'));
+		Config::set('dot.path', array ('second' => 'level'));
+		$this->assertEqual(array ('second' => 'level'), Config::get('dot.path'));
+		$this->assertIdentical('level', Config::get('dot.path.second'));
 
-		Config::write('dot.path.second', 'new');
-		$this->assertIdentical('new', Config::read('dot.path.second'));
-		$this->assertEqual(array ('second' => 'new'), Config::read('dot.path'));
+		Config::set('dot.path.second', 'new');
+		$this->assertIdentical('new', Config::get('dot.path.second'));
+		$this->assertEqual(array ('second' => 'new'), Config::get('dot.path'));
 	}
 
 	/**
 	 * Check read not set variable
 	 */
 	public function testEmptyKeys() {
-		$result = Config::read('NotFoundName');
+		$result = Config::get('NotFoundName');
 		$this->assertNull($result);
-		$result = Config::read('NotFoundName', 'default');
+		$result = Config::get('NotFoundName', 'default');
 		$this->assertIdentical('default', $result);
 	}
 
@@ -170,23 +170,23 @@ class ConfigTest extends \lithium\test\Unit {
 	 * Cross Identity read
 	 */
 	public function testAddIdentity() {
-		$result = Config::read('properties.identity');
+		$result = Config::get('properties.identity');
 		$this->assertIdentical('IPFTest', $result);
 
 		// Test load configs from multiple directories
-		$result = Config::read('properties.dir');
+		$result = Config::get('properties.dir');
 		$this->assertIdentical('test', $result);
 
-		$result = Config::read('properties.identity', array (), 'IPFTest.Test1');
+		$result = Config::get('properties.identity', array (), 'IPFTest.Test1');
 		$this->assertIdentical('IPFTest.Test1', $result);
 
-		$result = Config::read('properties.identity', array (), 'IPFTest.Test2');
+		$result = Config::get('properties.identity', array (), 'IPFTest.Test2');
 		$this->assertIdentical('IPFTest.Test2', $result);
 
-		$result = Config::read('properties.identity', array (), 'IPFTest.Test3');
+		$result = Config::get('properties.identity', array (), 'IPFTest.Test3');
 		$this->assertIdentical('IPFTest.Test3', $result);
 
-		$result = Config::read('properties.identity');
+		$result = Config::get('properties.identity');
 		$this->assertIdentical('IPFTest', $result);
 	}
 
@@ -198,12 +198,12 @@ class ConfigTest extends \lithium\test\Unit {
 		// Write by key which non-exists in config
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		Config::write('nonexistsinconfigkey', 'test');
-		$result = Config::read('nonexistsinconfigkey');
+		Config::set('nonexistsinconfigkey', 'test');
+		$result = Config::get('nonexistsinconfigkey');
 		$this->assertIdentical('test', $result);
 
-		Config::write('properties.service', 'test');
-		$result = Config::read('properties.service');
+		Config::set('properties.service', 'test');
+		$result = Config::get('properties.service');
 		$this->assertIdentical('test', $result);
 	}
 
@@ -213,10 +213,10 @@ class ConfigTest extends \lithium\test\Unit {
 	public function testReset() {
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		Config::write('properties.service', 'test');
+		Config::set('properties.service', 'test');
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		$result = Config::read('properties.service');
+		$result = Config::get('properties.service');
 		$this->assertIdentical('unknown', $result);
 	}
 
@@ -227,7 +227,7 @@ class ConfigTest extends \lithium\test\Unit {
 	public function testReadWithoutIdentity() {
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		$result = Config::read('properties.service');
+		$result = Config::get('properties.service');
 		$this->assertIdentical($result, 'unknown');
 	}
 
@@ -241,8 +241,8 @@ class ConfigTest extends \lithium\test\Unit {
 		$data = array (
 			'application' => 'test',
 		);
-		$write = Config::write('Test', $data, 'IPFTest.Test');
-		$read = Config::read('Test', array (), 'IPFTest.Test');
+		$write = Config::set('Test', $data, 'IPFTest.Test');
+		$read = Config::get('Test', array (), 'IPFTest.Test');
 
 		$this->assertIdentical($data, $read);
 		$this->assertIdentical($write['Test'], $read);
@@ -282,7 +282,7 @@ class ConfigTest extends \lithium\test\Unit {
 		Cache::clear('default');
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		$this->assertIdentical('defer', Config::read('test.config'));
+		$this->assertIdentical('defer', Config::get('test.config'));
 
 		Libraries::add(
 			'normalLib',
@@ -298,7 +298,7 @@ class ConfigTest extends \lithium\test\Unit {
 		Cache::clear('default');
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		$this->assertIdentical('normal', Config::read('test.config'));
+		$this->assertIdentical('normal', Config::get('test.config'));
 
 		Libraries::add(
 			'normalLibSecond',
@@ -314,7 +314,7 @@ class ConfigTest extends \lithium\test\Unit {
 		Cache::clear('default');
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		$this->assertIdentical('normal', Config::read('test.config'));
+		$this->assertIdentical('normal', Config::get('test.config'));
 
 		Libraries::add(
 			'defaultLib',
@@ -331,7 +331,7 @@ class ConfigTest extends \lithium\test\Unit {
 		Cache::clear('default');
 		Config::reset();
 		Config::config(array ('default' => array('adapter' => 'Json')));
-		$this->assertIdentical('default', Config::read('test.config'));
+		$this->assertIdentical('default', Config::get('test.config'));
 
 		// Restore default library
 		$library = Libraries::get('defaultLib');
@@ -365,7 +365,7 @@ class ConfigTest extends \lithium\test\Unit {
 				array ('valera' => 'Valery V. Vishnevskiy'),
 			)
 		);
-		$result = Config::read('merge');
+		$result = Config::get('merge');
 		$this->assertEqual($expected, $result);
 		Config::reset();
 		Libraries::remove('commandsLib');
@@ -393,7 +393,7 @@ class ConfigTest extends \lithium\test\Unit {
 				'valera' => 'Valery V. Vishnevskiy',
 			)
 		);
-		$result = Config::read('replace');
+		$result = Config::get('replace');
 		$this->assertEqual($expected, $result);
 		Config::reset();
 		Libraries::remove('commandsLib');
@@ -422,7 +422,7 @@ class ConfigTest extends \lithium\test\Unit {
 				'valera' => 'Valery V. Vishnevskiy',
 			)
 		);
-		$result = Config::read('unset');
+		$result = Config::get('unset');
 		$this->assertEqual($expected, $result);
 		Config::reset();
 		Libraries::remove('commandsLib');

@@ -5,7 +5,6 @@ namespace li3_config\extensions\storage;
 use lithium\core\ConfigException;
 use lithium\core\Environment;
 use lithium\storage\Cache;
-use lithium\util\collection\Filters;
 use lithium\util\String;
 use common\util\Set;
 use li3_config\extensions\util\Finder;
@@ -23,13 +22,6 @@ class Config extends \lithium\core\Adaptable {
 		'env' => '@',
 		'command' => '$',
 	);
-
-	/**
-	 * Stores the closures that represent the method filters. They are indexed by called class.
-	 *
-	 * @var array Method filters, indexed by `get_called_class()`.
-	 */
-	protected static $_methodFilters = array ();
 
 	/**
 	 * Original Environment
@@ -137,7 +129,7 @@ class Config extends \lithium\core\Adaptable {
 	 * @param string $name
 	 * @return mixed
 	 */
-	public static function read($name = null, $default = null, $identity = null) {
+	public static function get($name = null, $default = null, $identity = null) {
 		static::_toggle($identity);
 		static::_addIdentity($identity);
 
@@ -159,7 +151,7 @@ class Config extends \lithium\core\Adaptable {
 	 * @param mixed  $value
 	 * @return status
 	 */
-	public static function write($name, $value = null, $identity = null) {
+	public static function set($name, $value = null, $identity = null) {
 		static::_toggle($identity);
 		static::_addIdentity($identity);
 
@@ -227,7 +219,7 @@ class Config extends \lithium\core\Adaptable {
 			$configs = array ();
 			$hierarchyFull = Environment::get('hierarchy');
 			$configurations = $self::config();
-            $configurationsNames = array_keys($configurations);
+			$configurationsNames = array_keys($configurations);
 			// Start from root identities directory
 			foreach ($paths as $identityPath) {
 				$hierarchy = $hierarchyFull;
@@ -240,21 +232,21 @@ class Config extends \lithium\core\Adaptable {
 					}
 					$dh = opendir($identityPath);
 					while (($fileName = readdir($dh)) !== false) {
-                        $adapter = null;
-                        $configName = null;
-                        foreach ($configurationsNames as $name) {
-                            $adapter = $self::adapter($name);
-                            if (! $adapter->isSupported($fileName)) {
-                                continue;
-                            }
-                            else {
-                                $configName = $name;
-                                break;
-                            }
-                        }
-                        if ($configName === null) {
-                            continue;
-                        }
+						$adapter = null;
+						$configName = null;
+						foreach ($configurationsNames as $name) {
+							$adapter = $self::adapter($name);
+							if (! $adapter->isSupported($fileName)) {
+								continue;
+							}
+							else {
+								$configName = $name;
+								break;
+							}
+						}
+						if ($configName === null) {
+							continue;
+						}
 						$data = $adapter->read($identityPath.$fileName);
 
 						if ($data === null) {
@@ -290,8 +282,7 @@ class Config extends \lithium\core\Adaptable {
 					// Go to next hierarchy level
 					$path = array_shift($hierarchy);
 					$identityPath .= $path.'/';
-				}
-				while ($path);
+				} while ($path);
 			}
 			return $configs;
 		});
