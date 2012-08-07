@@ -1,0 +1,5 @@
+{
+	"app" : "Test",
+	"service" : "ipf.test",
+	"dir" : "test"
+}

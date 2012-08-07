@@ -5,7 +5,14 @@ namespace li3_config\extensions\adapter\storage\Config;
 /**
  * Adapter class to parse JSON configuration files
  */
-class Json extends \lithium\core\Object {
+class Json extends \lithium\core\Object implements \li3_config\extensions\adapter\storage\IConfig {
+
+	/**
+	 * Error number during read process
+	 *
+	 * @var integer
+	 */
+	protected $_error = null;
 
 	/**
 	 * Determine is it JSON file by extension
@@ -26,17 +33,34 @@ class Json extends \lithium\core\Object {
 	 */
 	public function read($path) {
 		try {
-			if ($data = file_get_contents($path)) {
+			if (($data = file_get_contents($path)) !== false) {
 				$data = str_replace('\\', '\\\\', $data);
 				$data = json_decode($data, true);
-				if (is_array($data)) {
-					return $data;
+				if ($data !== null) {
+					if (is_array($data)) {
+						return $data;
+					}
+					else {
+						$this->_error = self::ERROR_ARRAY;
+					}
+				}
+				else {
+					$this->_error = self::ERROR_DECODE;
 				}
 			}
+			else {
+				$this->_error = self::ERROR_READ;
+			}
 		}
-		catch (\Exception $e) {}
+		catch (\Exception $e) {
+			$this->_error = self::ERROR_READ;
+		}
 
 		return null;
+	}
+
+	public function getError() {
+		return $this->_error;
 	}
 
 }
