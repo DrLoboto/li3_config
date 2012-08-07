@@ -4,7 +4,7 @@ namespace li3_config\tests\cases\extensions\adapter\storage\Config;
 
 use lithium\core\Libraries;
 
-class Json extends \lithium\test\Unit {
+class JsonTest extends \lithium\test\Unit {
 
 	protected $_type = 'adapter.storage.Config';
 
