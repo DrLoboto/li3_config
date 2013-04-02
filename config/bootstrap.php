@@ -1,5 +1,12 @@
 <?php
 
-require dirname(__DIR__) . '/config/bootstrap/libraries.php';
-require dirname(__DIR__) . '/extensions/util/Loader.php';
-require dirname(__DIR__) . '/extensions/util/Finder.php';
+use lithium\core\Libraries;
+
+/* Add default path to bootstrap files into `Library` */
+$bootstrap = array ('{:library}/config/bootstrap');
+Libraries::paths(compact('bootstrap'));
+
+/* Load core classes directly to avoid paths resolution deadlock */
+$path = dirname(__DIR__);
+require_once $path.'/extensions/util/Loader.php';
+require_once $path.'/extensions/util/Finder.php';
