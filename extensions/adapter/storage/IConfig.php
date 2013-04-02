@@ -2,7 +2,10 @@
 
 namespace li3_config\extensions\adapter\storage;
 
-Interface IConfig {
+/**
+ * Configuration file read adapter interface to implement
+ */
+interface IConfig {
 
 	const ERROR_READ = 1;
 	const ERROR_DECODE = 2;
@@ -24,5 +27,12 @@ Interface IConfig {
 	 *               array which is assumed to be valid
 	 */
 	public function read($path);
+
+	/**
+	 * Returns last error code
+	 *
+	 * @return integer
+	 */
+	public function getError();
 
 }

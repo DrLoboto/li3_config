@@ -4,6 +4,19 @@ namespace li3_config\extensions\adapter\storage\Config;
 
 /**
  * Adapter class to parse JSON configuration files
+ *
+ * Configuration files format:
+ *   root_key.json
+ *   {
+ *     "key" : {
+ *       "nested_key" : "value"
+ *     }
+ *   }
+ *
+ *  There is no need to double escape "\" symbols in configuration files, loader
+ *  reads values like `"some\class\name"` fine. Only control sequences should be
+ *  escaped like `"two\\nlines"` when expected result is `"two\nlines"` (new
+ *  line as text sequence instead of actual new line).
  */
 class Json extends \lithium\core\Object implements \li3_config\extensions\adapter\storage\IConfig {
 
@@ -32,6 +45,7 @@ class Json extends \lithium\core\Object implements \li3_config\extensions\adapte
 	 *               array which is assumed to be valid
 	 */
 	public function read($path) {
+		$this->_error = null;
 		try {
 			if (($data = file_get_contents($path)) !== false) {
 				$data = str_replace('\\', '\\\\', $data);
@@ -59,6 +73,11 @@ class Json extends \lithium\core\Object implements \li3_config\extensions\adapte
 		return null;
 	}
 
+	/**
+	 * Returns last error code
+	 *
+	 * @return integer
+	 */
 	public function getError() {
 		return $this->_error;
 	}
