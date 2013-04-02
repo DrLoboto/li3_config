@@ -11,14 +11,16 @@ class Finder {
 	/**
 	 * Locate file by type and name respecting libraries search order.
 	 *
-	 * @param  string $type     File type according to `Libraries::paths()` types
-	 * @param  string $name     File name to be inserted into path template
-	 * @param  array  $options  Search order and path template options
-	 * @return string|boolean   Returns full file path or false if not found
-	 * @throws RuntimeException in case of no suitable libraries found or no paths
-	 *                          for this file type
+	 * @param  string  $type     File type according to `Libraries::paths()` types
+	 * @param  string  $name     File name to be inserted into path template
+	 * @param  array   $options  Search order and path template options
+	 * @param  boolean $isList   Return the list of paths or first finded path
+	 * @return string|boolean|array  Returns full file path or false if not found
+	 *                               Returns array of paths if $isList is `true`
+	 * @throws RuntimeException  in case of no suitable libraries found or no paths
+	 *                           for this file type
 	 */
-	public static function locate($type, $name, array $options = array ()) {
+	protected static function _path($type, $name, array $options = array (), $isList = false) {
 		$options += array ('options' => array ());
 		$options['options'] = array_merge(
 			(array) $options['options'],
@@ -37,7 +39,7 @@ class Finder {
 			'root' => LITHIUM_LIBRARY_PATH,
 			'name' => $name,
 		);
-
+		$list = array ();
 		foreach ($libraries as $library => $libraryOptions) {
 			$libraryOptions['library'] = $libraryOptions['path'];
 			foreach ($paths as $path => $params) {
@@ -53,11 +55,43 @@ class Finder {
 				}
 				$path = String::insert($path, $options + $libraryOptions);
 				if (file_exists($path)) {
-					return $path;
+					if ($isList) {
+						$list[] = $path;
+					}
+					else {
+						return $path;
+					}
 				}
 			}
 		}
-		return false;
+		return $isList ? $list : false;
+	}
+
+	/**
+	 * Locate file by type and name respecting libraries search order.
+	 *
+	 * @param  string $type     File type according to `Libraries::paths()` types
+	 * @param  string $name     File name to be inserted into path template
+	 * @param  array  $options  Search order and path template options
+	 * @return string|boolean   Returns full file path or false if not found
+	 * @throws RuntimeException in case of no suitable libraries found or no paths
+	 *                          for this file type
+	 */
+	public static function locate($type, $name, array $options = array ()) {
+		return static::_path($type, $name, $options);
+	}
+
+	/**
+	 * Locate paths by type
+	 *
+	 * @param  string $type     Path type according to `Libraries::paths()` types
+	 * @param  array  $options  Search order and path template options
+	 * @return array   Returns list of full paths
+	 * @throws RuntimeException in case of no suitable libraries found or no paths
+	 *                          for this file type
+	 */
+	public static function paths($type, array $options = array ()) {
+		return static::_path($type, null, $options, true);
 	}
 
 	/**
