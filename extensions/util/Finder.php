@@ -13,15 +13,17 @@ class Finder {
 	 *
 	 * @param  string  $type     File type according to `Libraries::paths()` types
 	 * @param  string  $name     File name to be inserted into path template
-	 * @param  array   $options  Search order and path template options
-	 * @param  boolean $isList   Return the list of paths or first finded path
+	 * @param  array   $options  Search order and path template options (@see
+	 *   `li3_config\extensions\util\Finder::libraries()` method options), plus
+	 *   `"list"` option - return list of all applicable paths if true, else
+	 *   return the first found path (by default)
 	 * @return string|boolean|array  Returns full file path or false if not found
 	 *                               Returns array of paths if $isList is `true`
 	 * @throws RuntimeException  in case of no suitable libraries found or no paths
 	 *                           for this file type
 	 */
-	protected static function _path($type, $name, array $options = array (), $isList = false) {
-		$options += array ('options' => array ());
+	protected static function _path($type, $name = null, array $options = array ()) {
+		$options += array ('options' => array (), 'list' => false);
 		$options['options'] = array_merge(
 			(array) $options['options'],
 			array ('path', 'resources')
@@ -55,7 +57,7 @@ class Finder {
 				}
 				$path = String::insert($path, $options + $libraryOptions);
 				if (file_exists($path)) {
-					if ($isList) {
+					if ($options['list']) {
 						$list[] = $path;
 					}
 					else {
@@ -64,7 +66,7 @@ class Finder {
 				}
 			}
 		}
-		return $isList ? $list : false;
+		return $options['list'] ? $list : false;
 	}
 
 	/**
@@ -78,6 +80,7 @@ class Finder {
 	 *                          for this file type
 	 */
 	public static function locate($type, $name, array $options = array ()) {
+		$options = array ('list' => false) + $options;
 		return static::_path($type, $name, $options);
 	}
 
@@ -91,7 +94,8 @@ class Finder {
 	 *                          for this file type
 	 */
 	public static function paths($type, array $options = array ()) {
-		return static::_path($type, null, $options, true);
+		$options = array ('list' => true) + $options;
+		return static::_path($type, null, $options);
 	}
 
 	/**
