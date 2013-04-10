@@ -11,16 +11,16 @@ class Finder {
 	/**
 	 * Locate file by type and name respecting libraries search order.
 	 *
-	 * @param  string  $type     File type according to `Libraries::paths()` types
-	 * @param  string  $name     File name to be inserted into path template
-	 * @param  array   $options  Search order and path template options (@see
+	 * @param  string $type File type according to `Libraries::paths()` types
+	 * @param  string $name File name to be inserted into path template
+	 * @param  array $options Search order and path template options (@see
 	 *   `li3_config\extensions\util\Finder::libraries()` method options), plus
 	 *   `"list"` option - return list of all applicable paths if true, else
 	 *   return the first found path (by default)
-	 * @return string|boolean|array  Returns full file path or false if not found
-	 *                               Returns array of paths if $isList is `true`
-	 * @throws RuntimeException  in case of no suitable libraries found or no paths
-	 *                           for this file type
+	 * @return string|boolean|array Returns full file path or false if not found
+	 *   Returns array of paths if `'list'` option is `true`
+	 * @throws RuntimeException in case of no suitable libraries found or no
+	 *   paths for this file type
 	 */
 	protected static function _path($type, $name = null, array $options = array ()) {
 		$options += array ('options' => array (), 'list' => false);
@@ -39,7 +39,7 @@ class Finder {
 		$options += array (
 			'app' => Libraries::get(true, 'path'),
 			'root' => LITHIUM_LIBRARY_PATH,
-			'name' => $name,
+			'name' => $name ?: '*',
 		);
 		$list = array ();
 		foreach ($libraries as $library => $libraryOptions) {
@@ -56,12 +56,24 @@ class Finder {
 					$path = $params;
 				}
 				$path = String::insert($path, $options + $libraryOptions);
-				if (file_exists($path)) {
-					if ($options['list']) {
-						$list[] = $path;
+				if ($name) {
+					if (file_exists($path)) {
+						if ($options['list']) {
+							$list[] = $path;
+						}
+						else {
+							return $path;
+						}
 					}
-					else {
-						return $path;
+				}
+				else {
+					if ($files = glob($path)) {
+						if ($options['list']) {
+							$list[] = $files;
+						}
+						else {
+							return $files;
+						}
 					}
 				}
 			}
@@ -70,7 +82,7 @@ class Finder {
 	}
 
 	/**
-	 * Locate file by type and name respecting libraries search order.
+	 * Locate file by type and name (optional) respecting libraries search order.
 	 *
 	 * @param  string $type     File type according to `Libraries::paths()` types
 	 * @param  string $name     File name to be inserted into path template
@@ -79,23 +91,8 @@ class Finder {
 	 * @throws RuntimeException in case of no suitable libraries found or no paths
 	 *                          for this file type
 	 */
-	public static function locate($type, $name, array $options = array ()) {
-		$options = array ('list' => false) + $options;
+	public static function locate($type, $name = null, array $options = array ()) {
 		return static::_path($type, $name, $options);
-	}
-
-	/**
-	 * Locate paths by type
-	 *
-	 * @param  string $type     Path type according to `Libraries::paths()` types
-	 * @param  array  $options  Search order and path template options
-	 * @return array   Returns list of full paths
-	 * @throws RuntimeException in case of no suitable libraries found or no paths
-	 *                          for this file type
-	 */
-	public static function paths($type, array $options = array ()) {
-		$options = array ('list' => true) + $options;
-		return static::_path($type, null, $options);
 	}
 
 	/**

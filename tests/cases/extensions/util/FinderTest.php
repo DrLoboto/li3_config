@@ -12,7 +12,7 @@ class FinderTest extends \lithium\test\Unit {
 
 	public function setUp() {
 		// Save libs
-		$this->_defaultPath = Libraries::get(true, 'path').'tests/mocks/resources';
+		$this->_defaultPath = Libraries::get(true, 'path').'/tests/mocks/resources';
 		$this->_libraries = Libraries::get();
 		foreach ($this->_libraries as $name => $options) {
 			Libraries::remove($name);
@@ -213,6 +213,148 @@ class FinderTest extends \lithium\test\Unit {
 		$expect = $this->_defaultPath.'/finderDefault/test.part.txt';
 		$options = array ('type' => 'part', 'options' => 'type');
 		$result = Finder::locate('fakeResource', 'test', $options);
+		$this->assertIdentical($expect, $result);
+	}
+
+	public function testLocateWithoutNameFirstMatch() {
+		Libraries::add(
+			'finderDefault',
+			array (
+				'path' => $this->_defaultPath.'/finderDefault',
+				'bootstrap' => false,
+				'default' => true,
+			)
+		);
+		Libraries::add(
+			'finderDefer',
+			array (
+				'path' => $this->_defaultPath.'/finderDefer',
+				'bootstrap' => false,
+				'defer' => true,
+			)
+		);
+		Libraries::add(
+			'finderNormal',
+			array (
+				'path' => $this->_defaultPath.'/finderNormal',
+				'bootstrap' => false,
+			)
+		);
+
+		Libraries::paths(
+			array (
+				'fakeResource' => array (
+					'{:library}/{:name}.file.txt',
+				),
+			)
+		);
+
+		$expect = array (
+			$this->_defaultPath.'/finderDefault/default.file.txt',
+			$this->_defaultPath.'/finderDefault/test.file.txt',
+		);
+		$result = Finder::locate('fakeResource');
+		$this->assertIdentical($expect, $result);
+
+		Libraries::remove('finderDefault');
+		$expect = array (
+			$this->_defaultPath.'/finderNormal/normal.file.txt',
+			$this->_defaultPath.'/finderNormal/test.file.txt',
+		);
+		$result = Finder::locate('fakeResource');
+		$this->assertIdentical($expect, $result);
+
+		Libraries::remove('finderNormal');
+		$expect = array (
+			$this->_defaultPath.'/finderDefer/defer.file.txt',
+			$this->_defaultPath.'/finderDefer/test.file.txt',
+		);
+		$result = Finder::locate('fakeResource');
+		$this->assertIdentical($expect, $result);
+
+		Libraries::remove('finderDefer');
+		$expect = false;
+		$result = Finder::locate('fakeResource');
+		$this->assertIdentical($expect, $result);
+	}
+
+	public function testLocateWithoutNameAll() {
+		Libraries::add(
+			'finderDefault',
+			array (
+				'path' => $this->_defaultPath.'/finderDefault',
+				'bootstrap' => false,
+				'default' => true,
+			)
+		);
+		Libraries::add(
+			'finderDefer',
+			array (
+				'path' => $this->_defaultPath.'/finderDefer',
+				'bootstrap' => false,
+				'defer' => true,
+			)
+		);
+		Libraries::add(
+			'finderNormal',
+			array (
+				'path' => $this->_defaultPath.'/finderNormal',
+				'bootstrap' => false,
+			)
+		);
+
+		Libraries::paths(
+			array (
+				'fakeResource' => array (
+					'{:library}/{:name}.file.txt',
+				),
+			)
+		);
+
+		$expect = array (
+			array (
+				$this->_defaultPath.'/finderDefault/default.file.txt',
+				$this->_defaultPath.'/finderDefault/test.file.txt',
+			),
+			array (
+				$this->_defaultPath.'/finderNormal/normal.file.txt',
+				$this->_defaultPath.'/finderNormal/test.file.txt',
+			),
+			array (
+				$this->_defaultPath.'/finderDefer/defer.file.txt',
+				$this->_defaultPath.'/finderDefer/test.file.txt',
+			),
+		);
+		$result = Finder::locate('fakeResource', null, array ('list' => true));
+		$this->assertIdentical($expect, $result);
+
+		Libraries::remove('finderDefault');
+		$expect = array (
+			array (
+				$this->_defaultPath.'/finderNormal/normal.file.txt',
+				$this->_defaultPath.'/finderNormal/test.file.txt',
+			),
+			array (
+				$this->_defaultPath.'/finderDefer/defer.file.txt',
+				$this->_defaultPath.'/finderDefer/test.file.txt',
+			),
+		);
+		$result = Finder::locate('fakeResource', null, array ('list' => true));
+		$this->assertIdentical($expect, $result);
+
+		Libraries::remove('finderNormal');
+		$expect = array (
+			array (
+				$this->_defaultPath.'/finderDefer/defer.file.txt',
+				$this->_defaultPath.'/finderDefer/test.file.txt',
+			),
+		);
+		$result = Finder::locate('fakeResource', null, array ('list' => true));
+		$this->assertIdentical($expect, $result);
+
+		Libraries::remove('finderDefer');
+		$expect = array ();
+		$result = Finder::locate('fakeResource', null, array ('list' => true));
 		$this->assertIdentical($expect, $result);
 	}
 
